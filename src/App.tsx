@@ -10,26 +10,41 @@ import { validateCFG, validatePDA } from './hooks/useValidation';
 import { convertCFGtoPDA } from './logic/cfgToPda';
 import { convertPDAtoCFG } from './logic/pdaToCfg';
 
-// Initial empty states
-const emptyCFG: CFG = {
-  variables: [],
-  terminals: [],
-  startSymbol: '',
-  productionRules: []
+const defaultCFG: CFG = {
+  variables: ['S', 'B'],
+  terminals: ['0', '1'],
+  startSymbol: 'S',
+  productionRules: [
+    { id: 'default-1', variable: 'S', production: '0B' },
+    { id: 'default-2', variable: 'B', production: '0S' },
+    { id: 'default-3', variable: 'B', production: '1S' },
+    { id: 'default-4', variable: 'B', production: '0' }
+  ]
 };
 
-const emptyPDA: PDA = {
-  states: [],
-  inputAlphabet: [],
-  stackAlphabet: [],
-  startState: '',
-  startStackSymbol: '',
-  acceptStates: [],
-  transitions: []
+const defaultPDA: PDA = {
+  states: ['q0', 'q1', 'q2'],
+  inputAlphabet: ['a', 'b'],
+  stackAlphabet: ['Z', 'A'],
+  startState: 'q0',
+  startStackSymbol: 'Z',
+  acceptStates: ['q2'],
+  transitions: [
+    { id: 'default-pda-1', currentState: 'q0', inputSymbol: 'a', poppedSymbol: 'Z', nextState: 'q0', pushedSymbols: 'AZ' },
+    { id: 'default-pda-2', currentState: 'q0', inputSymbol: 'a', poppedSymbol: 'A', nextState: 'q0', pushedSymbols: 'AA' },
+    { id: 'default-pda-3', currentState: 'q0', inputSymbol: 'b', poppedSymbol: 'A', nextState: 'q1', pushedSymbols: '' },
+    { id: 'default-pda-4', currentState: 'q1', inputSymbol: 'b', poppedSymbol: 'A', nextState: 'q1', pushedSymbols: '' },
+    { id: 'default-pda-5', currentState: 'q1', inputSymbol: '', poppedSymbol: 'Z', nextState: 'q2', pushedSymbols: 'Z' }
+  ]
 };
 
 // Example CFGs
 const cfgExamples: { name: string; description: string; cfg: CFG }[] = [
+  {
+    name: '0B / 0S / 1S / 0',
+    description: 'Default linear binary grammar',
+    cfg: defaultCFG
+  },
   {
     name: 'aⁿbⁿ',
     description: 'Equal number of a\'s followed by b\'s',
@@ -124,6 +139,11 @@ const cfgExamples: { name: string; description: string; cfg: CFG }[] = [
 
 // Example PDAs
 const pdaExamples: { name: string; description: string; pda: PDA }[] = [
+  {
+    name: 'Default PDA',
+    description: 'Prefilled PDA example',
+    pda: defaultPDA
+  },
   {
     name: 'aⁿbⁿ',
     description: 'Equal number of a\'s followed by b\'s',
@@ -238,8 +258,8 @@ const pdaExamples: { name: string; description: string; pda: PDA }[] = [
 function App() {
   // Core state
   const [mode, setMode] = useState<ConversionMode>('cfg-to-pda');
-  const [cfg, setCfg] = useState<CFG>(emptyCFG);
-  const [pda, setPda] = useState<PDA>(emptyPDA);
+  const [cfg, setCfg] = useState<CFG>(defaultCFG);
+  const [pda, setPda] = useState<PDA>(defaultPDA);
   const [showExamples, setShowExamples] = useState(false);
 
   // Conversion state
@@ -271,6 +291,12 @@ function App() {
     : pdaValidation.isValid;
 
   const handleModeChange = (newMode: ConversionMode) => {
+    if (newMode === 'pda-to-cfg') {
+      toast('PDA → CFG conversion is under active improvement. Results are educational and may occasionally need manual verification.', {
+        icon: 'ℹ️',
+        duration: 4500,
+      });
+    }
     setMode(newMode);
     setSteps([]);
     setCurrentStepIndex(0);
@@ -329,9 +355,9 @@ function App() {
 
   const handleReset = () => {
     if (mode === 'cfg-to-pda') {
-      setCfg(emptyCFG);
+      setCfg(defaultCFG);
     } else {
-      setPda(emptyPDA);
+      setPda(defaultPDA);
     }
     setSteps([]);
     setCurrentStepIndex(0);
